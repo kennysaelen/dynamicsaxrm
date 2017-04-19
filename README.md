@@ -1,14 +1,17 @@
 ## Synopsis
-TEST
-At the top of the file there should be a short introduction and/ or overview that explains **what** the project is. This description should match descriptions added for package managers (Gemspec, package.json, etc.)
+ReleaseManagment for Dynamics AX 2012 is the bridge between ReleaseManagement For Visual Studio 2013 (http://www.visualstudio.com/en-us/products/release-management-for-microsoft-visual-studio-vs.aspx) and Dynamics AX 2012. The project contains the scripts that you will need to configure ReleaseManagement to perform various actions regarding to the deployment of builds to Dynamics AX Environments.
+
+The solution consists of:
+A PowerShell module containing a library of functions to get things dons within your Dynamics AX Environment
+Wrapper PowerShell scripts representing tools within ReleaseManagement
+
+Note: The scripts depend the CodeCrib dll files of the Dynamics AX Admin project on CodePlex. There are dll's in the source here, but for the latest version, check on https://dynamicsaxadmin.codeplex.com/
+
+Detailed posts on how to use this solution can be found at: http://goo.gl/PskEIj
 
 ## Code Example
 
 Show what the library does as concisely as possible, developers should be able to figure out **how** your project solves their problem by looking at the code example. Make sure the API you are showing off is obvious, and that your code is short and concise.
-
-## Motivation
-
-A short description of the motivation behind the creation and maintenance of the project. This should explain **why** the project exists.
 
 ## Installation
 
