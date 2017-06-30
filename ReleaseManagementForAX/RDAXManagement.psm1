@@ -173,7 +173,7 @@ function Import-ModelStore
 	[CmdletBinding(SupportsShouldProcess=$true)]
 	Param(
 			[Parameter(	Position	= 0, 
-						Mandatory	= $true)]
+						Mandatory	= $false)]
 			[string]$file
 			,
 			[Parameter(	Position	= 1, 
@@ -212,19 +212,29 @@ function Import-ModelStore
 		# First load the cmdLets from the AXUtil library
 		Initialize-AxManagementTools
 
-        if((Get-ChildItem $file).Extension -eq ".zip")
+        if($file -ne '')
         {
-            Open-ZipFile -file $file -target (Get-ChildItem $file).Directory
-        }
-
-        if($PSBoundParameters.ContainsKey("Apply"))
-        {
-            if([String]::IsNullOrEmpty($PSBoundParameters.Apply))
+            if((Get-ChildItem $file).Extension -eq ".zip")
             {
-                $PSBoundParameters.Remove("Apply")
+                Open-ZipFile -file $file -target (Get-ChildItem $file).Directory
             }
         }
 
+        $PSBPkeys = $PSBoundParameters.GetEnumerator()
+		$keysToDelete = @()
+		ForEach($PSBPkey in $PSBPkeys)
+		{
+			if([String]::IsNullOrEmpty($PSBPkey.Value))
+			{
+				$keysToDelete += $PSBPkey.Key
+			}
+    	}
+
+		foreach($keyToDelete in $keysToDelete) 
+		{
+			$PSBoundParameters.Remove($keyToDelete)
+		}
+   	
         Import-AXModelStore @PSBoundParameters
 }
 
@@ -486,7 +496,7 @@ function Write-ZipFile
     }
 
     $zipFile = [System.IO.Compression.ZipFile]::Open($zipFilePath, $openMode)
-    $entry = [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zipFile, $file, $fileName)
+    $entry = [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zipFile, $file, $fileName, $compressionLevel)
     $zipFile.Dispose()
 }
 
@@ -661,6 +671,36 @@ function Start-ReportStatus
 			[Parameter(	Mandatory = $true)]
 			[string]$Status
 		)
+			
+	Start-SPReportStatus -SiteUrl $SiteUrl -DocumentListName $DocumentListName -DocumentListUrl $DocumentListUrl -DocumentTitle $DocumentTitle -Status $Status
+}
 
-    Start-SPReportStatus -SiteUrl $SiteUrl -DocumentListName $DocumentListName -DocumentListUrl $DocumentListUrl -DocumentTitle $DocumentTitle -Status $Status
+# Initializes 
+function Initialize-ModelStore
+{
+	[CmdletBinding(SupportsShouldProcess=$true)]
+	Param(
+			[Parameter(	Position	= 0, 
+						Mandatory	= $false)]
+			[string]$server = $null
+            ,
+            [Parameter(	Position	= 1, 
+						Mandatory	= $false)]
+			[string]$database = $null
+			,
+            [Parameter(	Position	= 2, 
+						Mandatory	= $false)]
+			[string]$schemaName = $null
+			,
+            [Parameter(	Position	= 3, 
+						Mandatory	= $false)]
+			[string]$drop = $null
+            ,
+            [switch]$noPrompt
+		)
+
+	# First load the cmdLets from the AXUtil library
+	Initialize-AxManagementTools
+
+	Initialize-AXModelStore @PSBoundParameters
 }

@@ -40,6 +40,9 @@ param
 	[Parameter( Position	= 0, 
                 Mandatory	= $false,
 				ParameterSetName = "SetModelStore")]
+	[Parameter( Position	= 0, 
+                Mandatory	= $false,
+				ParameterSetName = "InitializeModelStore")]
     [string]$server = $null
     ,
     ###################################################################
@@ -70,6 +73,9 @@ param
 	[Parameter( Position	= 1, 
                 Mandatory	= $false,
 				ParameterSetName = "SetModelStore")]
+	[Parameter( Position	= 1, 
+                Mandatory	= $false,
+				ParameterSetName = "InitializeModelStore")]
     [string]$database = $null
     ,
 	###################################################################
@@ -198,6 +204,9 @@ param
 				ParameterSetName = "InstallModel")]
     [Parameter( Mandatory   = $false,
                 ParameterSetName = "ImportModelStore")]
+    [Parameter( Position	= 3, 
+                Mandatory	= $false,
+				ParameterSetName = "InitializeModelStore")]
     [switch]$noPrompt
     ,
 	###################################################################
@@ -224,7 +233,16 @@ param
                 ParameterSetName = "GrantModelStore")]
     [Parameter( Mandatory   = $false,
                 ParameterSetName = "ImportModelStore")]
+    [Parameter( Position	= 4, 
+                Mandatory	= $false,
+				ParameterSetName = "InitializeModelStore")]
     [string]$schemaName= $null
+    ,
+    ###################################################################
+    [Parameter( Position	= 3, 
+                Mandatory	= $false,
+				ParameterSetName = "InitializeModelStore")]
+    [string]$drop= $null
 	,
 	###################################################################
 	# This is a workaround for the ParameterSetName because the Optimize Model Store uses only the 3 most basic parameters that all of the other function use.
@@ -241,6 +259,22 @@ param
                 Mandatory	= $true,
                 ParameterSetName = "EditModelManifest")]
     [switch]$setEditModelManifestDummy = $null
+    ,
+    ###################################################################
+	# This is a workaround for the ParameterSetName error
+	# Because PowerShell cannot figure out the ParameterSetName without this dummy variable
+	[Parameter(	Position	= 5, 
+                Mandatory	= $false,
+                ParameterSetName = "InitializeModelStore")]
+    [switch]$setInitializeModelStoreDummy = $null
+    ,
+        ###################################################################
+	# This is a workaround for the ExportModelStore error
+	# Because PowerShell cannot figure out the ParameterSetName without this dummy variable
+	[Parameter(	Position	= 5, 
+                Mandatory	= $false,
+                ParameterSetName = "ExportModelStore")]
+    [switch]$setExportModelStoreDummy = $null
     ,
 	###################################################################
     [Parameter(	Mandatory	= $false)]
@@ -308,10 +342,11 @@ try
 					Database = $database
 					Config = $config
 					File = $file
+                    Zip = $zip
 					}
 
 		# Call the export function in the RDAXManagement module
-		Export-ModelStore @parms -zip
+		Export-ModelStore @parms 
 	}
 	elseif($Action -eq "importModelStore")
 	{
@@ -420,6 +455,17 @@ try
 
 		Set-ModelStore @parms    
 	}
+	elseif ($Action -eq "InitializeModelStore")
+	{
+		# First wrap the arguments list for the Edit-ModelManifest function
+		$parms = @{ Server = $server
+					Database = $database
+					SchemaName = $schemaName
+                    Drop = $drop
+                    NoPrompt = $noPrompt }
+	
+		Initialize-ModelStore @parms
+	}
 	else
 	{
 		Write-Error "Unknown action";
@@ -440,7 +486,7 @@ Catch [system.exception]
     }
     
 	"`nError : RM Dynamics AX action $Action failed. `nException message: $ErrorMessage"
-
+	
 	$ExitCode = 1
 }
 
